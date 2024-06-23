@@ -58,13 +58,7 @@ public class Agent {
         if (className.equals("java/lang/Throwable")) {
             ClassFile classFile = ClassFile.of();
             ClassModel classModel = classFile.parse(classfileBuffer);
-            byte[] bytes = instrumentByteCode(classFile, classModel);
-            try {
-                Files.write(Path.of("MyThrowable.class"), bytes);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            return bytes;
+            return instrumentByteCode(classFile, classModel);
         } else {
             return classfileBuffer;
         }
