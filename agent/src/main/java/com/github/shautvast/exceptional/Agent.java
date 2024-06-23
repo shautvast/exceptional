@@ -12,7 +12,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.ProtectionDomain;
 
-@SuppressWarnings("ALL")
 public class Agent {
 
     private static final String MESSAGE = "--- Exceptional agent active";
@@ -62,20 +61,21 @@ public class Agent {
         });
     }
 
-    private static void instrumentMethodWithMyExceptionLogger(ClassBuilder classBuilder, MethodModel mm) {
-        classBuilder.withMethod(mm.methodName(), mm.methodType(), mm.flags().flagsMask(),
-                methodBuilder ->
-                        methodBuilder.transformCode(mm.code().get(), ((builder, element) -> {
-                                    if (element instanceof ReturnInstruction) {
-                                        builder.aload(0); // load `this` on the stack, ie the Throwable instance
-                                        builder.invokestatic( //  call my code
-                                                ClassDesc.of("com.github.shautvast.exceptional.ExceptionLogger"), "log",
-                                                MethodTypeDesc.ofDescriptor("(Ljava/lang/Throwable;)V"));
-                                        builder.return_();
-                                    } else {
-                                        builder.with(element);
-                                    }
-                                })
-                        ));
+    private static void instrumentMethodWithMyExceptionLogger(ClassBuilder classBuilder, MethodModel methodModel) {
+        methodModel.code().ifPresent(code ->
+                classBuilder.withMethod(methodModel.methodName(), methodModel.methodType(), methodModel.flags().flagsMask(),
+                        methodBuilder ->
+                                methodBuilder.transformCode(code, ((builder, element) -> {
+                                            if (element instanceof ReturnInstruction) {
+                                                builder.aload(0); // load `this` on the stack, ie the Throwable instance
+                                                builder.invokestatic( //  call my code
+                                                        ClassDesc.of("com.github.shautvast.exceptional.ExceptionLogger"), "log",
+                                                        MethodTypeDesc.ofDescriptor("(Ljava/lang/Throwable;)V"));
+                                                builder.return_();
+                                            } else {
+                                                builder.with(element); // leave any other bytecode in place
+                                            }
+                                        })
+                                )));
     }
 }
