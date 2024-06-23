@@ -6,7 +6,6 @@ import java.lang.constant.ClassDesc;
 import java.lang.constant.MethodTypeDesc;
 import java.lang.instrument.ClassDefinition;
 import java.lang.instrument.ClassFileTransformer;
-import java.lang.instrument.IllegalClassFormatException;
 import java.lang.instrument.Instrumentation;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,9 +13,9 @@ import java.security.ProtectionDomain;
 
 public class Agent {
 
-    private static final String MESSAGE = "--- Exceptional agent active";
-
+    @SuppressWarnings("DataFlowIssue")
     public static void premain(String agentArgs, Instrumentation instrumentation) throws Exception {
+        System.err.println("--->Exceptional agent active");
         // add transformer
         instrumentation.addTransformer(new ClassFileTransformer() {
             @Override
@@ -25,7 +24,7 @@ public class Agent {
             }
 
             @Override
-            public byte[] transform(Module module, ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
+            public byte[] transform(Module module, ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) {
                 return instrumentThrowable(className, classfileBuffer);
             }
         }, true);
