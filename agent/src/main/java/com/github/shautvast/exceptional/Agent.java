@@ -1,8 +1,5 @@
 package com.github.shautvast.exceptional;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.classfile.ClassElement;
 import java.lang.classfile.ClassFile;
 import java.lang.classfile.ClassModel;
@@ -27,34 +24,22 @@ public class Agent {
         instrumentation.addTransformer(new ClassFileTransformer() {
             @Override
             public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) {
-                return instrumentTheThrowable(className, classfileBuffer);
+                return instrumentThrowable(className, classfileBuffer);
             }
 
             @Override
             public byte[] transform(Module module, ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
-                return instrumentTheThrowable(className, classfileBuffer);
+                return instrumentThrowable(className, classfileBuffer);
             }
         }, true);
 
-        InputStream stream = Agent.class.getResourceAsStream("/java/lang/Throwable.class");
-        byte[] bytecode = readFully(stream);
+        byte[] bytecode = Files.readAllBytes(
+                Path.of(Agent.class.getResource("/java/lang/Throwable.class").toURI()));
 
         instrumentation.redefineClasses(new ClassDefinition(Throwable.class, bytecode));
     }
 
-    private static byte[] readFully(InputStream stream) throws IOException {
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        int nRead;
-        byte[] data = new byte[1024];
-        while ((nRead = stream.read(data, 0, data.length)) != -1) {
-            buffer.write(data, 0, nRead);
-        }
-
-        buffer.flush();
-        return buffer.toByteArray();
-    }
-
-    private static byte[] instrumentTheThrowable(String className, byte[] classfileBuffer) {
+    private static byte[] instrumentThrowable(String className, byte[] classfileBuffer) {
         if (className.equals("java/lang/Throwable")) {
             ClassFile classFile = ClassFile.of();
             ClassModel classModel = classFile.parse(classfileBuffer);
