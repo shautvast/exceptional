@@ -3,15 +3,19 @@ package com.github.shautvast.exceptional;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.classfile.*;
+import java.lang.classfile.ClassElement;
+import java.lang.classfile.ClassFile;
+import java.lang.classfile.ClassModel;
+import java.lang.classfile.MethodModel;
+import java.lang.classfile.instruction.ReturnInstruction;
 import java.lang.constant.ClassDesc;
-import java.lang.constant.ConstantDescs;
 import java.lang.constant.MethodTypeDesc;
 import java.lang.instrument.ClassDefinition;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.lang.instrument.Instrumentation;
-import java.lang.reflect.Modifier;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.ProtectionDomain;
 
 @SuppressWarnings("ALL")
@@ -54,58 +58,42 @@ public class Agent {
         if (className.equals("java/lang/Throwable")) {
             ClassFile classFile = ClassFile.of();
             ClassModel classModel = classFile.parse(classfileBuffer);
-
-            return classFile.build(classModel.thisClass().asSymbol(), classBuilder -> {
-                for (ClassElement ce : classModel) {
-                    if (ce instanceof MethodModel mm) {
-                        String signature = mm.methodName() + mm.methodType().stringValue();
-                        if (signature.equals("<init>()V")) {
-                            classBuilder.withMethod(mm.methodName(), mm.methodType(), Modifier.PUBLIC,
-                                    methodBuilder -> methodBuilder.withCode(
-                                            cb -> {
-                                                // recreate existing code for this method, because... I don't know how to simply add the new code at the end🫣
-                                                ClassDesc throwable = ClassDesc.of("java.lang.Throwable");
-                                                cb.aload(0);
-                                                cb.invokespecial(ConstantDescs.CD_Object, "<init>", MethodTypeDesc.ofDescriptor("()V"));
-                                                cb.aload(0);
-                                                cb.aload(0);
-                                                cb.putfield(throwable, "cause", ClassDesc.ofDescriptor("Ljava/lang/Throwable;"));
-                                                cb.aload(0);
-                                                cb.getstatic(throwable, "UNASSIGNED_STACK", ClassDesc.ofDescriptor("[Ljava/lang/StackTraceElement;"));
-                                                cb.putfield(throwable, "stackTrace", ClassDesc.ofDescriptor("[Ljava/lang/StackTraceElement;"));
-                                                cb.aload(0);
-                                                cb.invokevirtual(throwable, "fillInStackTrace", MethodTypeDesc.ofDescriptor("()Ljava/lang/Throwable;"));
-                                                cb.pop();
-//                                                cb.getstatic(throwable, "jfrTracing", ConstantDescs.CD_Boolean);
-//                                                Label end = cb.newLabel();
-//                                                cb.ifeq(end);
-//                                                cb.aload(0);
-//                                                cb.invokevirtual(ConstantDescs.CD_Object, "getClass", MethodTypeDesc.ofDescriptor("()Ljava/lang/Class;"));
-//                                                cb.aconst_null();
-//                                                cb.invokestatic(ClassDesc.of("jdk.internal.event.ThrowableTracer"), "traceThrowable", MethodTypeDesc.ofDescriptor("(Ljava/lang/Class;Ljava/lang/String;)V"));
-//                                                cb.labelBinding(end);
-
-                                                cb.aload(0);
-                                                cb.invokestatic(
-                                                        ClassDesc.of("com.github.shautvast.exceptional.ThrowableHandler"), "handle",
-                                                        MethodTypeDesc.ofDescriptor("(Ljava/lang/Throwable;)V"));
-                                                cb.return_();
-                                            }
-                                    ));
-                            continue;
-                        }
-                    }
-                    classBuilder.with(ce);
-                }
-            });
+            byte[] bytes = instrumentByteCode(classFile, classModel);
+            try {
+                Files.write(Path.of("MyThrowable.class"), bytes);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            return bytes;
         } else {
             return classfileBuffer;
         }
     }
-}
 
-//getstatic     #7                  // Field java/lang/System.out:Ljava/io/PrintStream;
-//ldc           #13                 // class com/github/shautvast/exceptional/Foo
-//invokevirtual #15                 // Method java/lang/Class.getModule:()Ljava/lang/Module;
-//invokevirtual #21                 // Method java/lang/Module.getName:()Ljava/lang/String;
-//invokevirtual #27                 // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+    private static byte[] instrumentByteCode(ClassFile classFile, ClassModel classModel) {
+        return classFile.build(classModel.thisClass().asSymbol(), classBuilder -> {
+            for (ClassElement ce : classModel) {
+                if (ce instanceof MethodModel mm) {
+                    if (mm.methodName().toString().equals("<init>")) {
+                        classBuilder.withMethod(mm.methodName(), mm.methodType(), mm.flags().flagsMask(),
+                                methodBuilder ->
+                                        methodBuilder.transformCode(mm.code().get(), ((builder, element) -> {
+                                                    if (element instanceof ReturnInstruction) {
+                                                        builder.aload(0);
+                                                        builder.invokestatic(
+                                                                ClassDesc.of("com.github.shautvast.exceptional.ThrowableHandler"), "handle",
+                                                                MethodTypeDesc.ofDescriptor("(Ljava/lang/Throwable;)V"));
+                                                        builder.return_();
+                                                    } else {
+                                                        builder.with(element);
+                                                    }
+                                                })
+                                        ));
+                        continue;
+                    }
+                }
+                classBuilder.with(ce);
+            }
+        });
+    }
+}
