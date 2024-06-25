@@ -18,6 +18,15 @@
         <maven.compiler.target>22</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.github.shautvast.exceptional</groupId>
+            <artifactId>exceptional-lib</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+
     <build>
         <plugins>
             <plugin>
@@ -38,7 +47,9 @@
                             <Premain-Class>com.github.shautvast.exceptional.Agent</Premain-Class>
                             <Can-Retransform-Classes>true</Can-Retransform-Classes>
                             <Can-Redefine-Classes>true</Can-Redefine-Classes>
-                            <Boot-Class-Path>/Users/Shautvast/dev/exceptional/lib/target/exceptional-lib-1.0-SNAPSHOT.jar</Boot-Class-Path>
+                            <Boot-Class-Path>
+                                /Users/Shautvast/dev/exceptional/lib/target/exceptional-lib-1.0-SNAPSHOT.jar
+                            </Boot-Class-Path>
                         </manifestEntries>
                     </archive>
                 </configuration>
