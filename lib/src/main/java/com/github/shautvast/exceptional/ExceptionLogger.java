@@ -8,17 +8,21 @@ import java.lang.invoke.MethodHandle;
 @SuppressWarnings("unused") // this code is called from the instrumented code
 public class ExceptionLogger {
     private static final Arena arena = Arena.ofConfined();
+    private static final MemorySegment ringbufferMemory = arena.allocate(4096);
     private static final Linker linker = Linker.nativeLinker();
     //    //TODO relative path, or configurable
     private static final SymbolLookup rustlib = SymbolLookup.libraryLookup("/Users/Shautvast/dev/exceptional/rustlib/target/debug/librustlib.dylib", arena);
     private final static MethodHandle logNative;
     private final static ObjectMapper objectMapper = new ObjectMapper();
+    private final static MPSCBufferWriter bufferWriter;
 
     static {
         MemorySegment logFunction = rustlib.find("log_java_exception").orElseThrow();
         logNative = linker.downcallHandle(logFunction, FunctionDescriptor.ofVoid(
                 ValueLayout.ADDRESS
         ));
+        CircularByteBuffer buffer = new CircularByteBuffer(ringbufferMemory);
+        bufferWriter = new MPSCBufferWriter(buffer);
     }
 
     // how does this behave in a multithreaded context??
