@@ -14,7 +14,7 @@ class CircularByteBufferTest {
         boolean written = buffer.put(bytes);
         assertTrue(written);
         assertArrayEquals(bytes, buffer.get());
-        assertArrayEquals(new byte[]{0, 0, 0, 15, 0, 0, 0, 15, 0, 5, 104, 101, 108, 108, 111, 0, 0}, buffer.data.array());
+        assertArrayEquals(new byte[]{0, 5, 104, 101, 108, 108, 111, 0, 0, 0, 0, 0, 7, 0, 0, 0, 7}, buffer.data.array());
     }
 
 
@@ -25,12 +25,12 @@ class CircularByteBufferTest {
         buffer.setWriteIndex(7);
         buffer.setReadIndex(7);
         buffer.put(bytes);
-        assertArrayEquals(new byte[]{0, 0, 0, 15, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0, 5, 104, 101, 108, 108, 111}, buffer.data.array());
+        assertArrayEquals(new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 5, 104, 101, 108, 108, 111, 0, 0, 0, 7, 0, 0, 0, 0}, buffer.data.array());
 //        buffer.setWriteIndex(0);
         // end of setup, situation where writeIndex < readIndex
         boolean written = buffer.put(bytes);
         assertTrue(written);
-        assertArrayEquals(new byte[]{0, 0, 0, 15, 0, 0, 0, 15, 0, 5, 104, 101, 108, 108, 111, 0, 5, 104, 101, 108, 108, 111}, buffer.data.array());
+        assertArrayEquals(new byte[]{0, 5, 104, 101, 108, 108, 111, 0, 5, 104, 101, 108, 108, 111, 0, 0, 0, 7, 0, 0, 0, 7}, buffer.data.array());
         assertEquals(7, buffer.getReadIndex());
         assertEquals(7, buffer.getWriteIndex());
     }
@@ -42,12 +42,12 @@ class CircularByteBufferTest {
         buffer.setWriteIndex(6);
         buffer.setReadIndex(6);
         buffer.put(bytes);
-        assertArrayEquals(new byte[]{0, 0, 0, 14, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 5, 104, 101, 108, 108, 111}, buffer.data.array());
+        assertArrayEquals(new byte[]{0, 0, 0, 0, 0, 0, 0, 5, 104, 101, 108, 108, 111, 0, 0, 0, 6, 0, 0, 0, 0}, buffer.data.array());
 
         // end of setup, situation where writeIndex < readIndex
         boolean written = buffer.put(bytes);
         assertFalse(written);
-        assertArrayEquals(new byte[]{0, 0, 0, 14, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 5, 104, 101, 108, 108, 111}, buffer.data.array());
+        assertArrayEquals(new byte[]{0, 0, 0, 0, 0, 0, 0, 5, 104, 101, 108, 108, 111, 0, 0, 0, 6, 0, 0, 0, 0}, buffer.data.array());
     }
 
     @Test
@@ -58,7 +58,7 @@ class CircularByteBufferTest {
         buffer.setReadIndex(6);
         boolean written = buffer.put(bytes);
         assertTrue(written);
-        assertArrayEquals(new byte[]{0, 0, 0, 14, 0, 0, 0, 12, 101, 108, 108, 111, 0, 0, 0, 5, 104}, buffer.data.array());
+        assertArrayEquals(new byte[]{101, 108, 108, 111, 0, 0, 0, 5, 104, 0, 0, 0, 6, 0, 0, 0, 4}, buffer.data.array());
         assertArrayEquals(bytes, buffer.get());
     }
 
@@ -70,7 +70,7 @@ class CircularByteBufferTest {
         buffer.setReadIndex(7);
         boolean written = buffer.put(bytes);
         assertTrue(written);
-        assertArrayEquals(new byte[]{0, 0, 0, 15, 0, 0, 0, 13, 104, 101, 108, 108, 111, 0, 0, 0, 5}, buffer.data.array());
+        assertArrayEquals(new byte[]{104, 101, 108, 108, 111, 0, 0, 0, 5, 0, 0, 0, 7, 0, 0, 0, 5}, buffer.data.array());
         assertArrayEquals(bytes, buffer.get());
     }
 
@@ -82,7 +82,7 @@ class CircularByteBufferTest {
         buffer.setReadIndex(8);
         boolean written = buffer.put(bytes);
         assertTrue(written);
-        assertArrayEquals(new byte[]{0, 0, 0, 16, 0, 0, 0, 14, 5, 104, 101, 108, 108, 111, 0, 0, 0}, buffer.data.array());
+        assertArrayEquals(new byte[]{5, 104, 101, 108, 108, 111, 0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 6}, buffer.data.array());
         assertArrayEquals(bytes, buffer.get());
     }
 
