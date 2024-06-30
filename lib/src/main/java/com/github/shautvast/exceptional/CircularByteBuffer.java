@@ -20,13 +20,15 @@ import java.util.stream.IntStream;
  * for reader/writer index deal with the offset value, so that the index (as method local variable) does not
  * include it (ie starting at 0). This simplifies the calculations that include these indices. Same goes for the
  * capacity.
+ *
  */
+//TODO put READ WRITE indices at the end
 @SuppressWarnings("StringTemplateMigration")
 public class CircularByteBuffer {
 
-    public static final int READ = 0;
-    public static final int WRITE = 4;
-    public static final int START = 8;
+    public static final int READ_POS = 0;
+    public static final int WRITE_POS = 4;
+    public static final int PAYLOADSTART_POS = 8;
     final ByteBuffer data;
 
     /**
@@ -36,9 +38,9 @@ public class CircularByteBuffer {
      * @param capacity the capacity of the CircularByteBuffer
      */
     public CircularByteBuffer(int capacity) {
-        data = ByteBuffer.allocate(capacity + START); // 8 extra for the read and write index
-        data.putInt(READ, START);
-        data.putInt(WRITE, START);
+        data = ByteBuffer.allocate(capacity + PAYLOADSTART_POS); // 8 extra for the read and write index
+        data.putInt(READ_POS, PAYLOADSTART_POS);
+        data.putInt(WRITE_POS, PAYLOADSTART_POS);
     }
 
     /**
@@ -108,7 +110,7 @@ public class CircularByteBuffer {
     }
 
     private int capacity() {
-        return data.capacity() - START;
+        return data.capacity() - PAYLOADSTART_POS;
     }
 
     /**
@@ -153,60 +155,60 @@ public class CircularByteBuffer {
     }
 
     private void get(int readIndex, byte[] result, int offset, int len) {
-        data.get(readIndex + START, result, offset, len);
+        data.get(readIndex + PAYLOADSTART_POS, result, offset, len);
     }
 
     private void get(int readIndex, byte[] result) {
-        data.get(readIndex + START, result);
+        data.get(readIndex + PAYLOADSTART_POS, result);
     }
 
     private short getShort(int readIndex) {
-        return data.getShort(readIndex + START);
+        return data.getShort(readIndex + PAYLOADSTART_POS);
     }
 
     private byte get(int readIndex) {
-        return data.get(readIndex + START);
+        return data.get(readIndex + PAYLOADSTART_POS);
     }
 
     int getWriteIndex() {
-        return this.data.getInt(WRITE) - START;
+        return this.data.getInt(WRITE_POS) - PAYLOADSTART_POS;
     }
 
     void setWriteIndex(int writeIndex) {
-        this.data.putInt(WRITE, writeIndex + START);
+        this.data.putInt(WRITE_POS, writeIndex + PAYLOADSTART_POS);
     }
 
     int getReadIndex() {
-        return this.data.getInt(READ) - START;
+        return this.data.getInt(READ_POS) - PAYLOADSTART_POS;
     }
 
     void setReadIndex(int readIndex) {
-        this.data.putInt(READ, readIndex + START);
+        this.data.putInt(READ_POS, readIndex + PAYLOADSTART_POS);
     }
 
     void putShort(int index, short value) {
-        this.data.putShort(index + START, value);
+        this.data.putShort(index + PAYLOADSTART_POS, value);
     }
 
     void put(int index, byte value) {
-        this.data.put(index + START, value);
+        this.data.put(index + PAYLOADSTART_POS, value);
     }
 
     void put(int index, byte[] value) {
-        this.data.put(index + START, value);
+        this.data.put(index + PAYLOADSTART_POS, value);
     }
 
     private void put(int writeIndex, byte[] bytes, int offset, int len) {
-        data.put(writeIndex + START, bytes, offset, len - offset);
+        data.put(writeIndex + PAYLOADSTART_POS, bytes, offset, len - offset);
     }
 
     @Override
     public String toString() {
-        return "CircularByteBuffer {r=" + this.data.getInt(READ) +
+        return "CircularByteBuffer {r=" + this.data.getInt(READ_POS) +
                 ", w=" +
-                this.data.getInt(WRITE) +
+                this.data.getInt(WRITE_POS) +
                 ", data=" +
-                IntStream.range(READ, this.data.array().length)
+                IntStream.range(READ_POS, this.data.array().length)
                         .map(x -> this.data.array()[x])
                         .mapToObj(Integer::toString)
                         .collect(Collectors.joining(",", "[", "]")) +
