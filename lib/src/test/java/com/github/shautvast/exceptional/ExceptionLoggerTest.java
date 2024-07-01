@@ -6,7 +6,7 @@ import java.util.concurrent.TimeUnit;
 
 class ExceptionLoggerTest {
 
-//    @Test
+    @Test
     void test() throws InterruptedException {
         ExceptionLogger.log(new Throwable());
         TimeUnit.SECONDS.sleep(30);
