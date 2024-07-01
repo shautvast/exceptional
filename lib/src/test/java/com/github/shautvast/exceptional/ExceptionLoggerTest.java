@@ -9,7 +9,7 @@ class ExceptionLoggerTest {
     @Test
     void test() throws InterruptedException {
         ExceptionLogger.log(new Throwable());
-        TimeUnit.SECONDS.sleep(30);
+        TimeUnit.SECONDS.sleep(1);
     }
 
 }

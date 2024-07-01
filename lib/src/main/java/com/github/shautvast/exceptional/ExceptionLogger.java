@@ -10,6 +10,7 @@ public class ExceptionLogger {
     public static void log(Throwable throwable) {
         try {
             // use json for now because of ease of integration
+            // would compression be useful?? use snappy?
             if (throwable != null) {
                 bufferWriter.put(objectMapper.writeValueAsBytes(throwable));
             }

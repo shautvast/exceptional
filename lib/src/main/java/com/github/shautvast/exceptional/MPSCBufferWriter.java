@@ -29,7 +29,7 @@ public class MPSCBufferWriter implements AutoCloseable {
 
             // setup of native memory ringbuffer
             var arena = Arena.ofConfined();
-            var ringbufferMemory = arena.allocate(0xffff);
+            var ringbufferMemory = arena.allocate(32768);
             var buffer = new CircularByteBuffer(ringbufferMemory);
 
             arena = Arena.ofConfined();

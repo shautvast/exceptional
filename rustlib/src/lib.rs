@@ -2,6 +2,9 @@ use std::ffi::c_char;
 
 mod throwable;
 
+// same value, but different meanings
+// TODO find a way to set the buffer size from java.
+// why not just add it to the function
 const CAPACITY: isize = 32760;
 const READ: isize = 32760;
 
