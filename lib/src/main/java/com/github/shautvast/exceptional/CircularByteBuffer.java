@@ -24,8 +24,8 @@ import java.util.stream.IntStream;
 @SuppressWarnings("StringTemplateMigration")
 public class CircularByteBuffer {
 
-    private int READ_POS;
-    private int WRITE_POS;
+    private int readStartPos;
+    private int writeStartPos;
     private int capacity;
     final ByteBuffer data;
 
@@ -54,11 +54,11 @@ public class CircularByteBuffer {
 
     private void initIndices() {
         this.capacity = this.data.capacity() - 8;
-        READ_POS = this.capacity; // write values after logical capacity position
-        WRITE_POS = this.capacity + 4;
+        readStartPos = this.capacity; // write values after logical capacity position
+        writeStartPos = this.capacity + 4;
 
-        this.data.putInt(READ_POS, 0);
-        this.data.putInt(WRITE_POS, 0);
+        this.data.putInt(readStartPos, 0);
+        this.data.putInt(writeStartPos, 0);
 
     }
 
@@ -113,7 +113,8 @@ public class CircularByteBuffer {
                 return true;
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            return false;
         } finally {
             setWriteIndex(writeIndex);
         }
@@ -121,10 +122,15 @@ public class CircularByteBuffer {
 
     /**
      * The reader side is provided, for reference and testability only.
-     * In practice, the reader is implemented outside of java
+     * In practice, the reader is implemented outside of java, see rustlib module
      */
     public byte[] get() {
         int readIndex = getReadIndex();
+        int writeIndex = getWriteIndex();
+        if (readIndex == writeIndex) {
+            return null;
+        }
+
         try {
             int remainingUntilEnd = capacity - readIndex;
             int len;
@@ -161,31 +167,40 @@ public class CircularByteBuffer {
     }
 
     int getWriteIndex() {
-        return this.data.getInt(WRITE_POS);
+        return this.data.getInt(writeStartPos);
     }
 
     void setWriteIndex(int writeIndex) {
-        this.data.putInt(WRITE_POS, writeIndex);
+        this.data.putInt(writeStartPos, writeIndex);
     }
 
     int getReadIndex() {
-        return this.data.getInt(READ_POS);
+        return this.data.getInt(readStartPos);
     }
 
     void setReadIndex(int readIndex) {
-        this.data.putInt(READ_POS, readIndex);
+        this.data.putInt(readStartPos, readIndex);
     }
 
     @Override
     public String toString() {
-        return "CircularByteBuffer {r=" + this.data.getInt(READ_POS) +
+        return "CircularByteBuffer {r=" + this.data.getInt(readStartPos) +
                 ", w=" +
-                this.data.getInt(WRITE_POS) +
+                this.data.getInt(writeStartPos) +
                 ", data=" +
-                IntStream.range(0, capacity)
-                        .map(x -> this.data.array()[x])
-                        .mapToObj(Integer::toString)
-                        .collect(Collectors.joining(",", "[", "]")) +
+                bytesToString(this.data.array()) +
                 "}";
     }
+
+    public static String bytesToString(byte[] bytes) {
+        if (bytes == null) {
+            return "null";
+        }
+        return IntStream.range(0, bytes.length)
+                .map(x -> bytes[x])
+                .mapToObj(Integer::toString)
+                .collect(Collectors.joining(",", "[", "]"));
+    }
+
+
 }

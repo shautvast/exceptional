@@ -11,14 +11,15 @@ class RingBufferTest {
 
     @Test
     void testWriteAndRead() {
-        RingBuffer ringBuffer = new RingBuffer(MemorySegment.ofArray(new byte[16]));
-        ringBuffer.startReader(x -> System.out.println("read " + new String(x, StandardCharsets.UTF_8)));
+//        var ringBuffer = new CircularByteBuffer(MemorySegment.ofArray(new byte[16]));
+        var writer = new MPSCBufferWriter();
+
+//        writer.startReader(x -> System.out.println("read " + new String(x, StandardCharsets.UTF_8)));
         for (int i = 0; i < 10; i++) {
             System.out.println("put " + i + " in ring buffer");
             byte[] testdata = ("test" + i).getBytes(StandardCharsets.UTF_8);
-            ringBuffer.write(testdata);
+            writer.put(testdata);
         }
-        ringBuffer.drain();
 
     }
 }

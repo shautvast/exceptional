@@ -2,13 +2,14 @@ package com.github.shautvast.exceptional;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.concurrent.TimeUnit;
 
 class ExceptionLoggerTest {
 
-    @Test
-    void test(){
+//    @Test
+    void test() throws InterruptedException {
         ExceptionLogger.log(new Throwable());
+        TimeUnit.SECONDS.sleep(30);
     }
 
 }

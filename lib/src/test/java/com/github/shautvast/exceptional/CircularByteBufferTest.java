@@ -9,7 +9,7 @@ class CircularByteBufferTest {
 
     @Test
     void testPutAndGet() {
-        CircularByteBuffer buffer = new CircularByteBuffer(9);
+        var buffer = new CircularByteBuffer(9);
         byte[] bytes = "hello".getBytes(UTF_8);
         boolean written = buffer.put(bytes);
         assertTrue(written);
@@ -17,18 +17,24 @@ class CircularByteBufferTest {
         assertArrayEquals(new byte[]{0, 5, 104, 101, 108, 108, 111, 0, 0, 0, 0, 0, 7, 0, 0, 0, 7}, buffer.data.array());
     }
 
+    @Test
+    void testJustGet() {
+        var buffer = new CircularByteBuffer(8);
+        System.out.println(CircularByteBuffer.bytesToString(buffer.get()));
+    }
+
 
     @Test
     void testPutFitsBeforeGet() {
-        CircularByteBuffer buffer = new CircularByteBuffer(14);
-        byte[] bytes = "hello".getBytes(UTF_8);
+        var buffer = new CircularByteBuffer(14);
+        var bytes = "hello".getBytes(UTF_8);
         buffer.setWriteIndex(7);
         buffer.setReadIndex(7);
         buffer.put(bytes);
         assertArrayEquals(new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 5, 104, 101, 108, 108, 111, 0, 0, 0, 7, 0, 0, 0, 0}, buffer.data.array());
 //        buffer.setWriteIndex(0);
         // end of setup, situation where writeIndex < readIndex
-        boolean written = buffer.put(bytes);
+        var written = buffer.put(bytes);
         assertTrue(written);
         assertArrayEquals(new byte[]{0, 5, 104, 101, 108, 108, 111, 0, 5, 104, 101, 108, 108, 111, 0, 0, 0, 7, 0, 0, 0, 7}, buffer.data.array());
         assertEquals(7, buffer.getReadIndex());
@@ -37,8 +43,8 @@ class CircularByteBufferTest {
 
     @Test
     void testPutFitsNotBeforeGet() {
-        CircularByteBuffer buffer = new CircularByteBuffer(13);
-        byte[] bytes = "hello".getBytes(UTF_8);
+        var buffer = new CircularByteBuffer(13);
+        var bytes = "hello".getBytes(UTF_8);
         buffer.setWriteIndex(6);
         buffer.setReadIndex(6);
         buffer.put(bytes);
@@ -52,8 +58,8 @@ class CircularByteBufferTest {
 
     @Test
     void testWrapAroundPutLenAndOneCharBeforeWrap() {
-        CircularByteBuffer buffer = new CircularByteBuffer(9);
-        byte[] bytes = "hello".getBytes(UTF_8);
+        var buffer = new CircularByteBuffer(9);
+        var bytes = "hello".getBytes(UTF_8);
         buffer.setWriteIndex(6);
         buffer.setReadIndex(6);
         boolean written = buffer.put(bytes);
@@ -64,11 +70,11 @@ class CircularByteBufferTest {
 
     @Test
     void testWrapAroundPutLenBeforeWrap() {
-        CircularByteBuffer buffer = new CircularByteBuffer(9);
-        byte[] bytes = "hello".getBytes(UTF_8);
+        var buffer = new CircularByteBuffer(9);
+        var bytes = "hello".getBytes(UTF_8);
         buffer.setWriteIndex(7);
         buffer.setReadIndex(7);
-        boolean written = buffer.put(bytes);
+        var written = buffer.put(bytes);
         assertTrue(written);
         assertArrayEquals(new byte[]{104, 101, 108, 108, 111, 0, 0, 0, 5, 0, 0, 0, 7, 0, 0, 0, 5}, buffer.data.array());
         assertArrayEquals(bytes, buffer.get());
@@ -76,11 +82,11 @@ class CircularByteBufferTest {
 
     @Test
     void testWrapAroundPutLenSplitBeforeWrap() {
-        CircularByteBuffer buffer = new CircularByteBuffer(9);
-        byte[] bytes = "hello".getBytes(UTF_8);
+        var buffer = new CircularByteBuffer(9);
+        var bytes = "hello".getBytes(UTF_8);
         buffer.setWriteIndex(8);
         buffer.setReadIndex(8);
-        boolean written = buffer.put(bytes);
+        var written = buffer.put(bytes);
         assertTrue(written);
         assertArrayEquals(new byte[]{5, 104, 101, 108, 108, 111, 0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 6}, buffer.data.array());
         assertArrayEquals(bytes, buffer.get());
@@ -88,8 +94,8 @@ class CircularByteBufferTest {
 
     @Test
     void testNoFreeSpace() {
-        CircularByteBuffer buffer = new CircularByteBuffer(9);
-        byte[] bytes = "hello".getBytes(UTF_8);
+        var buffer = new CircularByteBuffer(9);
+        var bytes = "hello".getBytes(UTF_8);
         boolean written1 = buffer.put(bytes);
         assertTrue(written1);
         boolean written2 = buffer.put(bytes);
@@ -98,12 +104,12 @@ class CircularByteBufferTest {
 
     @Test
     void testFreeSpaceReclaimed() {
-        CircularByteBuffer buffer = new CircularByteBuffer(9);
+        var buffer = new CircularByteBuffer(9);
         assertEquals(0, buffer.getReadIndex());
         assertEquals(0, buffer.getWriteIndex());
 
-        byte[] bytes = "hello".getBytes(UTF_8);
-        boolean written1 = buffer.put(bytes);
+        var bytes = "hello".getBytes(UTF_8);
+        var written1 = buffer.put(bytes);
         assertTrue(written1);
         assertEquals(0, buffer.getReadIndex());
         assertEquals(7, buffer.getWriteIndex());
@@ -112,7 +118,7 @@ class CircularByteBufferTest {
         assertEquals(7, buffer.getReadIndex());
         assertEquals(7, buffer.getWriteIndex());
 
-        boolean written2 = buffer.put(bytes);
+        var written2 = buffer.put(bytes);
         assertTrue(written2); // the read has freed space
         assertEquals(7, buffer.getReadIndex());
         assertEquals(5, buffer.getWriteIndex());
