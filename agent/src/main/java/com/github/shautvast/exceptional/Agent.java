@@ -22,12 +22,12 @@ public class Agent {
         instrumentation.addTransformer(new ClassFileTransformer() {
             @Override
             public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) {
-                return instrumentExceptionLoggerAtThrow(className, classfileBuffer);
+                return injectExceptionLoggerBeforeThrow(className, classfileBuffer);
             }
 
             @Override
             public byte[] transform(Module module, ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) {
-                return instrumentExceptionLoggerAtThrow(className, classfileBuffer);
+                return injectExceptionLoggerBeforeThrow(className, classfileBuffer);
             }
         }, true);
     }
@@ -35,7 +35,7 @@ public class Agent {
     /*
      * Every throw opcode will be preceded by a call to our ExceptionLogger
      */
-    private static byte[] instrumentExceptionLoggerAtThrow(String className, byte[] classfileBuffer) {
+    private static byte[] injectExceptionLoggerBeforeThrow(String className, byte[] classfileBuffer) {
         var classFile = ClassFile.of();
         var classModel = classFile.parse(classfileBuffer);
         return classFile.build(classModel.thisClass().asSymbol(), classBuilder -> {
