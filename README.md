@@ -28,7 +28,7 @@ cd api; RUST_LOG=info cargo run
 Start your java with 
 ```
 java22 -javaagent:$EXCEPTIONAL_PROJECT/exceptional/agent/target/exceptional-agent-1.0-SNAPSHOT.jar 
--Dagentlib="$EXCEPTIONAL_PROJECT/rustlib/target/debug/librustlib.dylib"
+-Dagentlib="$EXCEPTIONAL_PROJECT/rustlib/target/release/librustlib.dylib"
 --enable-preview --enable-native-access=ALL-UNNAMED 
 -classpath $YOUR_CLASSPATH YourMain
 ```

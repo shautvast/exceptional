@@ -21,13 +21,22 @@ public class Agent {
         // add transformer
         instrumentation.addTransformer(new ClassFileTransformer() {
             @Override
-            public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) {
-                return injectExceptionLoggerBeforeThrow(className, classfileBuffer);
+            public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
+                                    ProtectionDomain protectionDomain, byte[] classfileBuffer) {
+                return bytecode(className, classfileBuffer);
             }
 
             @Override
             public byte[] transform(Module module, ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) {
-                return injectExceptionLoggerBeforeThrow(className, classfileBuffer);
+                return bytecode(className, classfileBuffer);
+            }
+
+            private static byte[] bytecode(String className, byte[] classfileBuffer) {
+                if (!className.startsWith("com/fasterxml/jackson")) {
+                    return injectExceptionLoggerBeforeThrow(className, classfileBuffer);
+                } else {
+                    return classfileBuffer;
+                }
             }
         }, true);
     }

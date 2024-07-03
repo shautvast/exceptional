@@ -10,9 +10,8 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>agent</module>
         <module>rustlib</module>
-        <module>lib</module>
+        <module>agent</module>
     </modules>
 
 </project>
