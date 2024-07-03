@@ -38,7 +38,12 @@ public class CircularBufferWriter implements AutoCloseable {
             arena = Arena.ofConfined();
             linker = Linker.nativeLinker();
             //TODO relative path, or configurable
-            rustlib = SymbolLookup.libraryLookup(System.getProperty("agentlib"), arena);
+            String agentlibPath = System.getProperty("agentlib");
+            if (agentlibPath == null) {
+                System.err.println("Please specify an agent library with -Dagentlib=<path to native agent>");
+                System.exit(-1);
+            }
+            rustlib = SymbolLookup.libraryLookup(agentlibPath, arena);
             MemorySegment create = rustlib.find("buffer_updated").orElseThrow();
             var updateHandle = linker.downcallHandle(create, FunctionDescriptor.ofVoid(
                     ValueLayout.ADDRESS

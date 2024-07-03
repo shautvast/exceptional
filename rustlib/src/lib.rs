@@ -3,6 +3,7 @@ use std::ffi::c_char;
 use std::slice;
 
 use reqwest::blocking::Client;
+use tracing::error;
 
 // same value, but different meanings
 // TODO find a way to set the buffer size from java.
@@ -42,10 +43,9 @@ pub extern "C" fn buffer_updated(buffer: *mut c_char) {
     if len <= remaining {
         unsafe {
             let result = std::str::from_utf8_unchecked(slice::from_raw_parts(buffer.offset(read_pos).cast::<u8>(), len as usize));
-            client.post("http://localhost:3000/api/stacktraces")
+            _ = client.post("http://localhost:3000/api/stacktraces")
                 .body(result)
                 .send()
-                .unwrap();
         }
         read_pos += len;
     } else {
@@ -55,10 +55,9 @@ pub extern "C" fn buffer_updated(buffer: *mut c_char) {
             let mut s = String::with_capacity(len as usize);
             s.push_str(s1);
             s.push_str(s2);
-            client.post("http://localhost:3000/api/stacktraces")
+            _ = client.post("http://localhost:3000/api/stacktraces")
                 .body(s)
                 .send()
-                .unwrap();
         }
         read_pos = len - remaining;
     }

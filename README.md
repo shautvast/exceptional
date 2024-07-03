@@ -16,11 +16,19 @@ public class Main {
     }
 }
 ```
-* run it with (adjust paths): 
+Requirements
+* java22 
+* rust
+
+Start rest service 
 ``` bash
 cd api; RUST_LOG=info cargo run
 ```
 
+Start your java with 
 ```
-java22 -javaagent:$EXCEPTIONAL_PROJECT/exceptional/agent/target/exceptional-agent-1.0-SNAPSHOT.jar --enable-preview -classpath $YOUR_CLASSPATH Main
+java22 -javaagent:$EXCEPTIONAL_PROJECT/exceptional/agent/target/exceptional-agent-1.0-SNAPSHOT.jar 
+-Dagentlib="$EXCEPTIONAL_PROJECT/rustlib/target/debug/librustlib.dylib"
+--enable-preview --enable-native-access=ALL-UNNAMED 
+-classpath $YOUR_CLASSPATH YourMain
 ```

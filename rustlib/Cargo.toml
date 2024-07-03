@@ -11,4 +11,5 @@ bench = false
 anyhow = "1.0"
 chrono = "0.4"
 reqwest = { version = "0.12", features = ["blocking"]}
-crossbeam-deque = "0.8"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
