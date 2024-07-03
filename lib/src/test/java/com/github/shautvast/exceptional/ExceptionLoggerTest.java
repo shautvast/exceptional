@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 
 class ExceptionLoggerTest {
 
-    @Test
+//    @Test // needs -Dagentlib=$PROJECT/rustlib/target/debug/librustlib.dylib, or similar
     void test() {
         ExceptionLogger.log(new Throwable());
     }
