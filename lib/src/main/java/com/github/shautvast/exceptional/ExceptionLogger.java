@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @SuppressWarnings("unused") // this code is called from the instrumented code
 public class ExceptionLogger {
-    private final static ObjectMapper objectMapper = new ObjectMapper();;
-    private final static MPSCBufferWriter bufferWriter=new MPSCBufferWriter();
+    private final static ObjectMapper objectMapper = new ObjectMapper();
+    private final static MPSCBufferWriter bufferWriter = new MPSCBufferWriter();
 
     public static void log(Throwable throwable) {
         try {

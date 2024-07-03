@@ -1,18 +1,23 @@
+use std::cell::OnceCell;
 use std::ffi::c_char;
+use std::slice;
 
-mod throwable;
+use reqwest::blocking::Client;
 
 // same value, but different meanings
 // TODO find a way to set the buffer size from java.
 // why not just add it to the function
 const CAPACITY: isize = 32760;
 const READ: isize = 32760;
+const CLIENT: OnceCell<Client> = OnceCell::new();
 
 #[no_mangle]
 pub extern "C" fn buffer_updated(buffer: *mut c_char) {
+    let client = CLIENT;
+    let client = client.get_or_init(|| Client::new());
     let mut read_pos = get_u32(buffer, READ) as isize;
 
-    let mut remaining = CAPACITY - read_pos;
+    let mut remaining = CAPACITY - read_pos; // nr of bytes to read before end of buffer
     let len = if remaining == 1 {
         let byte_high = get_u8(buffer, read_pos);
         read_pos = 0;
@@ -33,36 +38,36 @@ pub extern "C" fn buffer_updated(buffer: *mut c_char) {
         l
     } as isize;
 
-    let mut result = Vec::with_capacity(len as usize);
+    // copy only when needed
     if len <= remaining {
-        for i in 0..len {
-            unsafe { result.push(*buffer.offset(read_pos + i) as u8); }
+        unsafe {
+            let result = std::str::from_utf8_unchecked(slice::from_raw_parts(buffer.offset(read_pos).cast::<u8>(), len as usize));
+            client.post("http://localhost:3000/api/stacktraces")
+                .body(result)
+                .send()
+                .unwrap();
         }
         read_pos += len;
     } else {
-        for i in 0..remaining {
-            unsafe { result.push(*buffer.offset(read_pos + i) as u8); }
+        unsafe {
+            let s1 = std::str::from_utf8_unchecked(slice::from_raw_parts(buffer.offset(read_pos).cast::<u8>(), remaining as usize));
+            let s2 = std::str::from_utf8_unchecked(slice::from_raw_parts(buffer.cast::<u8>(), (len - remaining) as usize));
+            let mut s = String::with_capacity(len as usize);
+            s.push_str(s1);
+            s.push_str(s2);
+            client.post("http://localhost:3000/api/stacktraces")
+                .body(s)
+                .send()
+                .unwrap();
         }
-        read_pos = 0;
-        for i in 0..len - remaining {
-            unsafe { result.push(*buffer.offset(i) as u8); }
-        }
-        read_pos += len - remaining;
+        read_pos = len - remaining;
     }
     put_u32(buffer, READ, read_pos as u32);
-
-    let string = String::from_utf8(result);
-    if let Ok(json) = string {
-        println!("receiving {}", json);
-    } else {
-        println!("not ok");
-    }
 }
 
 fn get_u8(s: *const c_char, pos: isize) -> u8 {
     unsafe { *s.offset(pos) as u8 }
 }
-
 
 fn get_u16(s: *const c_char, pos: isize) -> u16 {
     let mut b: [u8; 2] = [0; 2];

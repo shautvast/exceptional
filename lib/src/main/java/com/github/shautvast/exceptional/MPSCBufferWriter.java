@@ -1,7 +1,6 @@
 package com.github.shautvast.exceptional;
 
 import java.lang.foreign.*;
-import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -14,10 +13,15 @@ public class MPSCBufferWriter implements AutoCloseable {
     private static Linker linker;
     private static SymbolLookup rustlib;
     private static final LinkedBlockingDeque<byte[]> writeQueue = new LinkedBlockingDeque<>(); // unbounded
-    private static final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private static final ExecutorService executorService = Executors.newSingleThreadExecutor(runnable -> {
+        Thread thread = new Thread(runnable);
+        thread.setDaemon(true);
+        return thread;
+    });
     private final AtomicBoolean active = new AtomicBoolean(false);
 
     public MPSCBufferWriter() {
+//        DatabaseInit.initializeDatabase();
         startWriteQueueListener();
     }
 
@@ -58,8 +62,8 @@ public class MPSCBufferWriter implements AutoCloseable {
                 } catch (Throwable e) {
                     throw new RuntimeException(e);
                 }
-
             }
+            System.out.println("Shutting down");
 
         });
     }

@@ -73,7 +73,7 @@ public class Agent {
                                     ClassDesc.of(EXCEPTIONLOGGER), "log",
                                     MethodTypeDesc.ofDescriptor("(Ljava/lang/Throwable;)V"));
                         }
-                        builder.with(element); // leave any other element in place
+                        builder.with(element); // leave every element in place
                     });
                 }));
     }
