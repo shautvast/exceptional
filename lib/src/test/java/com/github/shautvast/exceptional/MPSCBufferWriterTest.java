@@ -1,7 +1,5 @@
 package com.github.shautvast.exceptional;
 
-import org.junit.jupiter.api.Test;
-
 import java.lang.foreign.Arena;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -14,7 +12,7 @@ class MPSCBufferWriterTest {
         var arena = Arena.ofConfined();
         var ringbufferMemory = arena.allocate(4096);
 //        var buffer = new CircularByteBuffer(ringbufferMemory);
-        MPSCBufferWriter writer = new MPSCBufferWriter();
+        CircularBufferWriter writer = new CircularBufferWriter();
         byte[] bytes = "cow".getBytes(UTF_8);
         writer.put(bytes);
         writer.put(bytes);

@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Enables multithreaded writing, while keeping CircularByteBuffer simpler (only suitable for single-threaded writing)
  */
-public class MPSCBufferWriter implements AutoCloseable {
+public class CircularBufferWriter implements AutoCloseable {
     private static Linker linker;
     private static SymbolLookup rustlib;
     private static final LinkedBlockingDeque<byte[]> writeQueue = new LinkedBlockingDeque<>(); // unbounded
@@ -20,8 +20,7 @@ public class MPSCBufferWriter implements AutoCloseable {
     });
     private final AtomicBoolean active = new AtomicBoolean(false);
 
-    public MPSCBufferWriter() {
-//        DatabaseInit.initializeDatabase();
+    public CircularBufferWriter() {
         startWriteQueueListener();
     }
 
@@ -39,7 +38,7 @@ public class MPSCBufferWriter implements AutoCloseable {
             arena = Arena.ofConfined();
             linker = Linker.nativeLinker();
             //TODO relative path, or configurable
-            rustlib = SymbolLookup.libraryLookup("/Users/Shautvast/dev/exceptional/rustlib/target/debug/librustlib.dylib", arena);
+            rustlib = SymbolLookup.libraryLookup(System.getProperty("agentlib"), arena);
             MemorySegment create = rustlib.find("buffer_updated").orElseThrow();
             var updateHandle = linker.downcallHandle(create, FunctionDescriptor.ofVoid(
                     ValueLayout.ADDRESS
