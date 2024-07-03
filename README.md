@@ -7,8 +7,7 @@ Work in Progress. Proof of concept works, but needs optimization. Try this at ho
 
 Running:
 * Update the path to the rust lib (temp fix) in ExceptionLogger for your setup
-* mvn clean install
-* cd rustlib; cargo build
+* mvn clean install `#maven also takes care of cargo`
 * create a minimal class in a separate project
 ```java
 public class Main {
@@ -19,5 +18,9 @@ public class Main {
 ```
 * run it with (adjust paths): 
 ``` bash
+cd api; RUST_LOG=info cargo run
+```
+
+```
 java22 -javaagent:$EXCEPTIONAL_PROJECT/exceptional/agent/target/exceptional-agent-1.0-SNAPSHOT.jar --enable-preview -classpath $YOUR_CLASSPATH Main
 ```
