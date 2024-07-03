@@ -8,18 +8,15 @@ import java.util.stream.IntStream;
 /**
  * Circular buffer for variable sized byte arrays. The indices for read and write
  * are also stored in the bytebuffer, making changes visible to any non-java process that is reading.
- * <p>
+ *
+ *
  * Written for a scenario with multiple concurrent writers, and a single reader in a non-java process
  * This class itself is Not Threadsafe! It relies on MPSCBufferWriter for multithreaded writes. This queues
  * byte arrays waiting to be stored in the circular buffer. MPSCBufferWriter starts the only
  * thread that is allowed to interact with the CircularByteBuffer.
  * ..
  * *Implementation note:*
- * The first 8 bytes are reserved for the reader and writer index. START constant indicates the actual startindex
- * of the payload data. The index stored is the actual index (ie starting at 8). The reads and write methods
- * for reader/writer index deal with the offset value, so that the index (as method local variable) does not
- * include it (ie starting at 0). This simplifies the calculations that include these indices. Same goes for the
- * capacity.
+ * The last 8 bytes are reserved for the reader and writer index. The actual capacity is always `bytebuffer.capacity -8`
  */
 @SuppressWarnings("StringTemplateMigration")
 public class CircularByteBuffer {
