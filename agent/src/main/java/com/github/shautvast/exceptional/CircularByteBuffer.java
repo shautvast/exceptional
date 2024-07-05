@@ -56,7 +56,6 @@ public class CircularByteBuffer {
 
         this.data.putInt(readStartPos, 0);
         this.data.putInt(writeStartPos, 0);
-
     }
 
     public boolean put(byte[] bytes) {
