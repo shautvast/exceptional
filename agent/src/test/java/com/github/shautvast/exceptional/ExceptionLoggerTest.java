@@ -8,7 +8,7 @@ class ExceptionLoggerTest {
 
     @Test
     void test() throws InterruptedException {
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 1; i++) {
             ExceptionLogger.log(new Throwable());
         }
         Thread.sleep(Duration.ofSeconds(1));

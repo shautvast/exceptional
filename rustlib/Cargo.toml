@@ -14,3 +14,4 @@ reqwest = { version = "0.12", features = ["blocking"]}
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 crossbeam-channel = "0.5"
+snappy = "0.4"

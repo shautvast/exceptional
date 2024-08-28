@@ -14,7 +14,6 @@ pub async fn create_stacktrace(
     let new_post_db = stacktrace_repository::NewPostDb {
         stacktrace: data,
     };
-
     let created_stacktrace = stacktrace_repository::insert(&state.pool, new_post_db)
         .await
         .map_err(StacktraceError::InfraError)?;

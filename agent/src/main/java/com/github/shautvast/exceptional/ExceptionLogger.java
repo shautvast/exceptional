@@ -1,6 +1,7 @@
 package com.github.shautvast.exceptional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.xerial.snappy.Snappy;
 
 @SuppressWarnings("unused") // this code is called from the instrumented code
 public class ExceptionLogger {
@@ -12,7 +13,7 @@ public class ExceptionLogger {
             // use json for now because of ease of integration
             // would compression be useful?? use snappy?
             if (throwable != null) {
-                bufferWriter.put(objectMapper.writeValueAsBytes(throwable));
+                bufferWriter.put(Snappy.compress(objectMapper.writeValueAsBytes(throwable)));
             }
         } catch (Throwable e) {
             e.printStackTrace(System.err);

@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.*;
 
-class CircularByteBufferTest {
+class SingleThreadCircularByteBuffer2Test {
 
     @Test
     void testPutAndGet() {
@@ -20,7 +20,7 @@ class CircularByteBufferTest {
     @Test
     void testJustGet() {
         var buffer = new CircularByteBuffer(8);
-        System.out.println(CircularByteBuffer.bytesToString(buffer.get()));
+        System.out.println(SingleThreadCircularByteBuffer.bytesToString(buffer.get()));
     }
 
 

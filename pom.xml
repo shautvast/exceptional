@@ -12,6 +12,8 @@
     <modules>
         <module>rustlib</module>
         <module>agent</module>
+        <module>api</module>
+        <module>concurrency-test</module>
     </modules>
 
 </project>

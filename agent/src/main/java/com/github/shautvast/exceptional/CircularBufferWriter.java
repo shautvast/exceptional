@@ -33,7 +33,7 @@ public class CircularBufferWriter implements AutoCloseable {
             // setup of native memory ringbuffer
             var arena = Arena.ofConfined();
             var ringbufferMemory = arena.allocate(32768);
-            var buffer = new CircularByteBuffer(ringbufferMemory);
+            var buffer = new SingleThreadCircularByteBuffer(ringbufferMemory);
 
             arena = Arena.ofConfined();
             linker = Linker.nativeLinker();

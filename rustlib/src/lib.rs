@@ -12,7 +12,7 @@ use reqwest::blocking::Client; // can I use non-blocking here?
 // why not just add it to the function
 const CAPACITY: isize = 32760;
 const READ: isize = 32760;
-static CHANNEL: OnceLock<(Sender<String>, Receiver<String>)> = OnceLock::new();
+static CHANNEL: OnceLock<(Sender<Vec<u8>>, Receiver<Vec<u8>>)> = OnceLock::new();
 static HANDLE: OnceLock<JoinHandle<()>> = OnceLock::new();
 
 /// Reads the data from the bytebuffer in the caller thread and sends the data to a background
@@ -37,6 +37,20 @@ pub unsafe extern "C" fn buffer_updated(buffer: *mut c_char) {
             loop {
                 let maybe_job = receiver.recv();
                 if let Ok(data) = maybe_job {
+                    let data = String::from_utf8(snappy::uncompress(&data).unwrap()).unwrap();
+                    _ = http_client
+                        .post("http://localhost:3000/api/stacktraces")
+                        .body(data)
+                        .send();
+                }
+            }
+        });
+        thread::spawn(move || {
+            let http_client = Client::new();
+            loop {
+                let maybe_job = receiver.recv();
+                if let Ok(data) = maybe_job {
+                    let data = String::from_utf8(snappy::uncompress(&data).unwrap()).unwrap();
                     _ = http_client
                         .post("http://localhost:3000/api/stacktraces")
                         .body(data)
@@ -74,27 +88,26 @@ pub unsafe extern "C" fn buffer_updated(buffer: *mut c_char) {
     // must copy to maintain it safely once read from the buffer
     // can safely skip checks for len and utf8
     if len <= remaining {
-        let s = std::str::from_utf8_unchecked(slice::from_raw_parts(
+        let s = slice::from_raw_parts(
             buffer.offset(read_pos).cast::<u8>(),
             len as usize,
-        )).to_owned();
+        ).to_owned();
         let send_result = sender.send_timeout(s, Duration::from_secs(10));
         if send_result.is_err() {
             println!("overflow detected, discarding");
         }
         read_pos += len;
     } else {
-        let s1 = std::str::from_utf8_unchecked(slice::from_raw_parts(
+        let mut s = slice::from_raw_parts(
             buffer.offset(read_pos).cast::<u8>(),
             remaining as usize,
-        ));
-        let s2 = std::str::from_utf8_unchecked(slice::from_raw_parts(
+        ).to_owned();
+        let s2 = slice::from_raw_parts(
             buffer.cast::<u8>(),
             (len - remaining) as usize,
-        ));
-        let mut s = String::with_capacity(len as usize);
-        s.push_str(s1);
-        s.push_str(s2);
+        );
+        s.append(&mut s2.to_owned());
+
         let send_result = sender.send_timeout(s, Duration::from_secs(10));
         if send_result.is_err() {
             println!("overflow detected, discarding");
@@ -136,5 +149,16 @@ fn put_u32(s: *mut c_char, pos: isize, value: u32) {
         *s.offset(pos + 1) = bytes[1] as c_char;
         *s.offset(pos + 2) = bytes[2] as c_char;
         *s.offset(pos + 3) = bytes[3] as c_char;
+    }
+}
+
+#[cfg(test)]
+mod test {
+    #[test]
+    fn read_snap() {
+        let bytes = std::fs::read("/Users/Shautvast/dev/exceptional/agent/hello.snap").unwrap();
+        let uncompressed = snappy::uncompress(&bytes).unwrap();
+        let uncompressed = String::from_utf8(uncompressed).unwrap();
+        println!("{}", uncompressed);
     }
 }
